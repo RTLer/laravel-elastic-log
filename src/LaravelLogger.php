@@ -67,7 +67,7 @@ class LaravelLogger extends parentCollector
             try {
                 $exceptionCollector = new ExceptionsCollector();
                 $exceptionCollector->setChainExceptions(
-                    $this->app['config']->get('debugbar.options.exceptions.chain', true)
+                    $this->app['config']->get('reporter.options.exceptions.chain', true)
                 );
                 $this->addCollector($exceptionCollector);
             } catch (\Exception $e) {
@@ -98,7 +98,7 @@ class LaravelLogger extends parentCollector
 
         if ($this->shouldCollect('views', true) && isset($this->app['events'])) {
             try {
-                $collectData = $this->app['config']->get('debugbar.options.views.data', true);
+                $collectData = $this->app['config']->get('reporter.options.views.data', true);
                 $this->addCollector(new ViewCollector($collectData));
                 $this->app['events']->listen(
                     'composing:*',
@@ -147,7 +147,7 @@ class LaravelLogger extends parentCollector
         if ($this->shouldCollect('db', true) && isset($this->app['db'])) {
             $db = $this->app['db'];
             if ($debugbar->hasCollector('time') && $this->app['config']->get(
-                    'debugbar.options.db.timeline',
+                    'reporter.options.db.timeline',
                     false
                 )
             ) {
@@ -157,20 +157,20 @@ class LaravelLogger extends parentCollector
             }
             $queryCollector = new QueryCollector($timeCollector);
 
-            if ($this->app['config']->get('debugbar.options.db.with_params')) {
+            if ($this->app['config']->get('reporter.options.db.with_params')) {
                 $queryCollector->setRenderSqlWithParams(true);
             }
 
-            if ($this->app['config']->get('debugbar.options.db.backtrace')) {
+            if ($this->app['config']->get('reporter.options.db.backtrace')) {
                 $queryCollector->setFindSource(true);
             }
 
-            if ($this->app['config']->get('debugbar.options.db.explain.enabled')) {
-                $types = $this->app['config']->get('debugbar.options.db.explain.types');
+            if ($this->app['config']->get('reporter.options.db.explain.enabled')) {
+                $types = $this->app['config']->get('reporter.options.db.explain.types');
                 $queryCollector->setExplainSource(true, $types);
             }
 
-            if ($this->app['config']->get('debugbar.options.db.hints', true)) {
+            if ($this->app['config']->get('reporter.options.db.hints', true)) {
                 $queryCollector->setShowHints(true);
             }
 
@@ -218,7 +218,7 @@ class LaravelLogger extends parentCollector
                 }
 
                 $authCollector->setShowName(
-                    $this->app['config']->get('debugbar.options.auth.show_name')
+                    $this->app['config']->get('reporter.options.auth.show_name')
                 );
                 $this->addCollector($authCollector);
             } catch (\Exception $e) {
@@ -232,11 +232,31 @@ class LaravelLogger extends parentCollector
 
 
         $renderer = $this->getJavascriptRenderer();
-        $renderer->setIncludeVendors($this->app['config']->get('debugbar.include_vendors', true));
-        $renderer->setBindAjaxHandlerToXHR($app['config']->get('debugbar.capture_ajax', true));
+        $renderer->setIncludeVendors($this->app['config']->get('reporter.include_vendors', true));
+        $renderer->setBindAjaxHandlerToXHR($app['config']->get('reporter.capture_ajax', true));
 
         $this->booted = true;
     }
+
+    public function shouldCollect($name, $default = false)
+    {
+        return $this->app['config']->get('reporter.collectors.' . $name, $default);
+    }
+
+    /**
+     * Check if the reporter is enabled
+     * @return boolean
+     */
+    public function isEnabled()
+    {
+        if ($this->enabled === null) {
+            $this->enabled = value($this->app['config']->get('reporter.enabled'));
+        }
+
+        return $this->enabled;
+    }
+
+
 
     /**
      * @param $request
