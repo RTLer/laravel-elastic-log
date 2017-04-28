@@ -8,5 +8,16 @@
         }
     ],
     "minimum-stability": "stable",
-    "require": {}
+    "require": {
+        "barryvdh/laravel-debugbar": "^2.3",
+        "guzzlehttp/guzzle": "^6.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rtler\\Logger\\": "src/"
+        }
+    },
+    "require-dev": {
+        "orchestra/testbench": "^3.4"
+    }
 }
