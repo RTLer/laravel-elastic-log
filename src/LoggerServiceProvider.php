@@ -15,10 +15,10 @@ class LoggerServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $debugbarConfigPath = __DIR__ . '/config/debugbar.php';
-        $configPath = __DIR__ . '/config/reporter.php';
-        $this->mergeConfigFrom($debugbarConfigPath, 'reporter');
-        $this->mergeConfigFrom($configPath, 'reporter');
+        $this->app['config']->set('reporter', array_merge(
+            require __DIR__ . '/config/debugbar.php',
+            require __DIR__ . '/config/reporter.php'
+        ));
 
         $this->app->alias(
             DataFormatter::class,
