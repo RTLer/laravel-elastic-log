@@ -87,3 +87,5 @@ Temporary Items
 .idea/vcs.xml
 
 composer.lock
+
+.idea/php.xml

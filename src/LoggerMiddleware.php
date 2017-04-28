@@ -2,15 +2,12 @@
 
 namespace Rtler\Logger;
 
-use Error;
 use Closure;
+use Error;
 use Exception;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\TransferException;
-use Illuminate\Http\Request;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Http\Request;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 class LoggerMiddleware
@@ -60,17 +57,8 @@ class LoggerMiddleware
             $response = $this->handleException($request, $e);
         }
 
-        // Modify the response to add the Debugbar
-        try {
-            $httpClient = new Client(['base_uri' => 'http://127.0.0.1:8080/api/']);
-            $httpClient->post('report', [
-                'json' => $this->reporter->getReport($request),
-            ]);
-        } catch (RequestException $exception) {
-            $exception->getResponse();
-        } catch (TransferException $exception) {
-//            $exception;
-        }
+        $this->send($request);
+
         return $response;
 
     }
@@ -96,5 +84,19 @@ class LoggerMiddleware
         $handler->report($e);
 
         return $handler->render($passable, $e);
+    }
+
+    /**
+     * @param $request
+     */
+    protected function send($request)
+    {
+        $reporterJob = new SendToReporterJob($this->reporter->getReport($request));
+
+        if (config('reporter.report.queue', false)) {
+            dispatch($reporterJob);
+            return;
+        }
+        $reporterJob->handle();
     }
 }
