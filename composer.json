@@ -1,0 +1,12 @@
+{
+    "name": "rtler/laravel-elastic-log",
+    "type": "library",
+    "authors": [
+        {
+            "name": "hooman naghiee",
+            "email": "hooman@RTLer.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
